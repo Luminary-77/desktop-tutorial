@@ -129,27 +129,35 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
 
 		const videoId = 'macro-video-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
 
-		// 去掉了 loop，保留 playsinline；加了 onended 显示选项
-		const videoHTML = `<video id="${videoId}" width="${videoWidth}" playsinline webkit-playsinline
-			onended="var c=document.getElementById('choices-container'); if(c){c.style.display='block';}">
-			<source src="${videoPath}" type="${videoType}">
-			Your browser does not support the video tag.
-		</video>`;
+		const videoHTML = `<video id="${videoId}" width="${videoWidth}" playsinline webkit-playsinline>
+    <source src="${videoPath}" type="${videoType}">
+    Your browser does not support the video tag.
+</video>`;
 
 		new Wikifier(this.output, videoHTML);
 
 		// 尝试带声音自动播放，被拦截则降级为静音
 		setTimeout(() => {
-			const video = document.getElementById(videoId);
-			if (video) {
-				video.muted = false;
-				video.play().catch(error => {
-					console.log("带声音自动播放被拦截，降级为静音播放:", error);
-					video.muted = true;
-					video.play();
-				});
-			}
-		}, 100);
+    const video = document.getElementById(videoId);
+    if (video) {
+        // 先尝试带声音自动播放
+        video.muted = false;
+        video.play().catch(error => {
+            console.log("带声音自动播放被拦截，降级为静音播放:", error);
+            video.muted = true;
+            video.play();
+        });
+
+        // 关键：用 addEventListener 绑定 ended 事件
+        video.addEventListener('ended', function() {
+            var choices = document.getElementById('choices-container');
+            if (choices) {
+                choices.style.display = 'block';
+            }
+        }, { once: true }); // { once: true } 确保事件只触发一次
+    }
+}, 100);
+
 	}
 });</script><tw-passagedata pid="1" name="Untitled Passage" tags="" position="700,275" size="100,100">一个oc ver.的地狱把妹王
 尝试用twine复刻了b站互动视频的玩法
